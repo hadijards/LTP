@@ -1,0 +1,58 @@
+No build.gradle do módulo do seu aplicativo, adicione:
+
+implementation files('libs/sqljdbc42.jar')
+Permissões de Rede:
+
+No arquivo AndroidManifest.xml, adicione a permissão para usar a internet:
+
+\\xml
+
+<uses-permission android:name="android.permission.INTERNET" />
+Código Java para Conectar ao SQL Server:
+
+O código de conexão pode ser executado em uma AsyncTask ou em uma thread separada para evitar bloquear a Thread Principal do aplicativo.
+
+\\java
+
+public class ConexaoSQL extends AsyncTask<Void, Void, String> {
+    private static final String URL = "jdbc:sqlserver://<ENDEREÇO_DO_SERVIDOR>:<PORTA>;databaseName=<NOME_DO_BANCO>";
+    private static final String USUARIO = "seu_usuario";
+    private static final String SENHA = "sua_senha";
+
+    @Override
+    protected String doInBackground(Void... params) {
+        Connection conexao = null;
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            conexao = DriverManager.getConnection(URL, USUARIO, SENHA);
+            if (conexao != null) {
+                return "Conectado com sucesso!";
+            } else {
+                return "Falha na conexão!";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Erro: " + e.getMessage();
+        } finally {
+            try {
+                if (conexao != null) {
+                    conexao.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void onPostExecute(String resultado) {
+        // Mostra o resultado na interface do usuário
+        Toast.makeText(context, resultado, Toast.LENGTH_LONG).show();
+    }
+}
+Executando a Conexão:
+
+Execute a AsyncTask quando precisar realizar a conexão com o banco de dados:
+\\java
+
+new ConexaoSQL().execute();
